@@ -4,8 +4,10 @@ ENV APP_NAME="星辰超级智能体"
 ENV KEEP_APP_RUNNING=1
 ENV TAKE_CONFIG_OWNERSHIP=1
 
-# 1. 安装基础依赖与中文字体
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# 1. 修复 /var/log 软链接并安装基础依赖与中文字体
+RUN set -ex; \
+    if [ -L /var/log ]; then rm -f /var/log && mkdir -p /var/log; fi; \
+    apt-get update && apt-get install -y --no-install-recommends \
     wget \
     curl \
     ca-certificates \
