@@ -1,0 +1,14 @@
+appname=teleagent
+version=2.7.1
+display_name=星辰超级智能体
+desc=中国电信自研 AI 办公助手 TeleAgent。本地运行数据不流出，自主理解指令、推理规划、调用工具，执行文档处理、数据分析与知识管理。
+platform=all
+source=thirdparty
+maintainer=mwh1987
+maintainer_url=https://github.com/mwh1987/fnos-teleagent
+distributor=mwh1987
+os_min_version=1.0.0
+desktop_uidir=ui
+desktop_applaunchname=teleagent.Application
+ctl_stop=true
+checkport=false

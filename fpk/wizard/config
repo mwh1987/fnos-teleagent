@@ -1,0 +1,71 @@
+[
+  {
+    "stepTitle": "修改 Macvlan 网络配置",
+    "items": [
+      {
+        "type": "tips",
+        "helpText": "修改后将自动重启 TeleAgent 容器生效。"
+      },
+      {
+        "type": "text",
+        "field": "wizard_parent_nic",
+        "label": "NAS 物理网卡名称",
+        "initValue": "eth0",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入物理网卡名称（如 eth0、enp3s0）"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "field": "wizard_subnet",
+        "label": "局域网网段 (CIDR)",
+        "initValue": "192.168.1.0/24",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入网段，例如 192.168.1.0/24"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "field": "wizard_gateway",
+        "label": "路由器网关 IP",
+        "initValue": "192.168.1.1",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入网关 IP，例如 192.168.1.1"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "field": "wizard_ip",
+        "label": "TeleAgent 独立 IP",
+        "initValue": "192.168.1.188",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入分配给 TeleAgent 的独立 IP"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "field": "wizard_port",
+        "label": "Web 访问端口",
+        "initValue": "5800",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入端口（默认 5800）"
+          }
+        ]
+      }
+    ]
+  }
+]
