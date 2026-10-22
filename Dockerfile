@@ -1,4 +1,4 @@
-FROM jlesage/baseimage-gui:debian-12
+FROM jlesage/baseimage-gui:debian-12-v4
 
 ENV APP_NAME="星辰超级智能体"
 ENV KEEP_APP_RUNNING=1
