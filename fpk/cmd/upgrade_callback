@@ -1,5 +1,11 @@
 #!/bin/bash
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 
-### This script is called after the user upgrades the application.
+# 离线自动载入 Docker 镜像
+IMAGE_FILE="${TRIM_APPDEST}/image.tar.gz"
+if [ -f "$IMAGE_FILE" ]; then
+    gzip -dc "$IMAGE_FILE" | docker load
+    rm -f "$IMAGE_FILE"
+fi
 
 exit 0

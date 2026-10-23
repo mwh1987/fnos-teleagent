@@ -1,4 +1,5 @@
 #!/bin/bash
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 
 # 生成 Docker Compose 读取的 .env 环境变量文件
 ENV_FILE="${TRIM_APPDEST}/docker/.env"
@@ -18,5 +19,12 @@ PORT=$PORT
 EOF
 
 chmod 644 "$ENV_FILE"
+
+# 离线自动载入 Docker 镜像（支持无网/弱网离线部署）
+IMAGE_FILE="${TRIM_APPDEST}/image.tar.gz"
+if [ -f "$IMAGE_FILE" ]; then
+    gzip -dc "$IMAGE_FILE" | docker load
+    rm -f "$IMAGE_FILE"
+fi
 
 exit 0

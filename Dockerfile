@@ -21,13 +21,16 @@ RUN set -ex; \
     libuuid1 \
     libsecret-1-0 \
     libasound2 \
+    libgbm1 \
+    libdrm2 \
+    libgl1-mesa-dri \
     fonts-wqy-zenhei \
     fonts-wqy-microhei \
     locales \
     && rm -rf /var/lib/apt/lists/*
 
 # 设置中文语言环境
-RUN locale-gen zh_CN.UTF-8
+RUN sed -i -e 's/# zh_CN.UTF-8 UTF-8/zh_CN.UTF-8 UTF-8/' /etc/locale.gen && locale-gen zh_CN.UTF-8
 ENV LANG=zh_CN.UTF-8
 ENV LC_ALL=zh_CN.UTF-8
 
