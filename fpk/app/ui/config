@@ -3,7 +3,7 @@
     "teleagent.main": {
       "title": "星辰超级智能体",
       "icon": "images/icon_{0}.png",
-      "type": "iframe",
+      "type": "url",
       "protocol": "http",
       "port": "5800",
       "url": "/",

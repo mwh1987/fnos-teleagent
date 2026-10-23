@@ -6,13 +6,15 @@ services:
     container_name: fnos-teleagent
     restart: unless-stopped
     ports:
-      - "${TRIM_SERVICE_PORT:-5800}:5800"
+      - "${PORT:-5800}:5800"
     environment:
-      - PUID=0
-      - PGID=0
+      - USER_ID=1000
+      - GROUP_ID=1000
+      - TAKE_CONFIG_OWNERSHIP=1
       - TZ=Asia/Shanghai
       - DISPLAY_WIDTH=1440
       - DISPLAY_HEIGHT=900
+      - WEB_HOST_CLIPBOARD_SYNC=1
     volumes:
       - "${TRIM_PKGVAR}/config:/config"
       - "${TRIM_APPDEST}/data:/workspace"

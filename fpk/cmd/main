@@ -1,6 +1,11 @@
 #!/bin/bash
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+
+[ -z "$TRIM_APPDEST" ] && TRIM_APPDEST="/vol1/@appcenter/teleagent"
+[ -z "$TRIM_PKGVAR" ] && TRIM_PKGVAR="/vol1/@appdata/teleagent"
 
 CONTAINER_NAME="fnos-teleagent"
+COMPOSE_FILE="${TRIM_APPDEST}/docker/docker-compose.yaml"
 
 is_docker_running () {
     if docker inspect "$CONTAINER_NAME" 2>/dev/null | grep -q '"Status": "running"'; then
@@ -12,9 +17,15 @@ is_docker_running () {
 
 case $1 in
 start)
+    if [ -f "$COMPOSE_FILE" ]; then
+        docker compose -f "$COMPOSE_FILE" up -d
+    fi
     exit 0
     ;;
 stop)
+    if [ -f "$COMPOSE_FILE" ]; then
+        docker compose -f "$COMPOSE_FILE" down
+    fi
     exit 0
     ;;
 status)

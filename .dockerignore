@@ -1,0 +1,4 @@
+*.fpk
+*.tar.gz
+.git
+fpk/app/image.tar.gz

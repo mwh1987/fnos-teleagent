@@ -9,10 +9,11 @@ if [ -f "$ENV_FILE" ]; then
     PORT=$(grep '^PORT=' "$ENV_FILE" | cut -d '=' -f2 | tr -d ' "\r\n')
 fi
 
-[ -z "$IP" ] && IP="192.168.1.188"
+NAS_HOST="${HTTP_HOST%%:*}"
+[ -z "$NAS_HOST" ] && NAS_HOST="${SERVER_NAME:-192.168.1.3}"
 [ -z "$PORT" ] && PORT="5800"
 
-TARGET_URL="http://${IP}:${PORT}/"
+TARGET_URL="http://${NAS_HOST}:${PORT}/"
 
 echo "Status: 302 Found"
 echo "Location: ${TARGET_URL}"

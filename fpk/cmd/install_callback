@@ -1,9 +1,21 @@
 #!/bin/bash
+exec > /tmp/teleagent_install.log 2>&1
+echo "=== TeleAgent install_callback started at $(date) ==="
+echo "USER: $(id)"
+echo "TRIM_APPDEST: $TRIM_APPDEST"
+echo "TRIM_PKGVAR: $TRIM_PKGVAR"
+
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 
-# 生成 Docker Compose 读取的 .env 环境变量文件
-ENV_FILE="${TRIM_APPDEST}/docker/.env"
+[ -z "$TRIM_APPDEST" ] && TRIM_APPDEST="/vol1/@appcenter/teleagent"
+[ -z "$TRIM_PKGVAR" ] && TRIM_PKGVAR="/vol1/@appdata/teleagent"
 
+mkdir -p "${TRIM_APPDEST}/docker"
+mkdir -p "${TRIM_APPDEST}/data"
+mkdir -p "${TRIM_PKGVAR}/config"
+chmod -R 777 "${TRIM_APPDEST}/data" "${TRIM_PKGVAR}/config" 2>/dev/null || true
+
+ENV_FILE="${TRIM_APPDEST}/docker/.env"
 PARENT_NIC="${wizard_parent_nic:-eth0}"
 SUBNET="${wizard_subnet:-192.168.1.0/24}"
 GATEWAY="${wizard_gateway:-192.168.1.1}"
@@ -21,10 +33,15 @@ EOF
 chmod 644 "$ENV_FILE"
 
 # 离线自动载入 Docker 镜像（支持无网/弱网离线部署）
-IMAGE_FILE="${TRIM_APPDEST}/image.tar.gz"
-if [ -f "$IMAGE_FILE" ]; then
-    gzip -dc "$IMAGE_FILE" | docker load
-    rm -f "$IMAGE_FILE"
+if [ -f "${TRIM_APPDEST}/image.tar.gz" ]; then
+    echo "Loading docker image from ${TRIM_APPDEST}/image.tar.gz..."
+    docker load -i "${TRIM_APPDEST}/image.tar.gz" || true
+    rm -f "${TRIM_APPDEST}/image.tar.gz"
+elif [ -f "${TRIM_APPDEST}/image.tar" ]; then
+    echo "Loading docker image from ${TRIM_APPDEST}/image.tar..."
+    docker load -i "${TRIM_APPDEST}/image.tar" || true
+    rm -f "${TRIM_APPDEST}/image.tar"
 fi
 
+echo "=== Install callback completed successfully at $(date) ==="
 exit 0

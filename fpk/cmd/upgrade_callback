@@ -1,11 +1,15 @@
 #!/bin/bash
+exec > /tmp/teleagent_upgrade.log 2>&1
+set -ex
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 
 # 离线自动载入 Docker 镜像
-IMAGE_FILE="${TRIM_APPDEST}/image.tar.gz"
-if [ -f "$IMAGE_FILE" ]; then
-    gzip -dc "$IMAGE_FILE" | docker load
-    rm -f "$IMAGE_FILE"
+if [ -f "${TRIM_APPDEST}/image.tar.gz" ]; then
+    docker load -i "${TRIM_APPDEST}/image.tar.gz"
+    rm -f "${TRIM_APPDEST}/image.tar.gz"
+elif [ -f "${TRIM_APPDEST}/image.tar" ]; then
+    docker load -i "${TRIM_APPDEST}/image.tar"
+    rm -f "${TRIM_APPDEST}/image.tar"
 fi
 
 exit 0
