@@ -18,6 +18,7 @@ is_docker_running () {
 case $1 in
 start)
     if [ -f "$COMPOSE_FILE" ]; then
+        export COMPOSE_HTTP_TIMEOUT=600
         docker compose -f "$COMPOSE_FILE" up -d
     fi
     exit 0
