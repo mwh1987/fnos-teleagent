@@ -15,6 +15,8 @@ services:
       - DISPLAY_WIDTH=1440
       - DISPLAY_HEIGHT=900
       - WEB_HOST_CLIPBOARD_SYNC=1
+      - PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
+      - PIP_TRUSTED_HOST=mirrors.aliyun.com
     volumes:
       - "${TRIM_PKGVAR}/config:/config"
       - "${TRIM_APPDEST}/data:/workspace"
