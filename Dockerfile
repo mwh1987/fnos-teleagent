@@ -80,39 +80,41 @@ timeout = 60
 EOF
 
 # 配置中文字体别名（将 SimSun、SimHei、Microsoft YaHei 映射到文泉驿，保证 Office 导出不产生豆腐块）
-RUN mkdir -p /etc/fonts && cat << 'EOF' > /etc/fonts/local.conf
-<?xml version="1.0"?>
-<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
-<fontconfig>
-  <match target="pattern">
-    <test name="family"><string>SimSun</string></test>
-    <edit name="family" mode="assign" binding="strong"><string>WenQuanYi Zen Hei</string></edit>
-  </match>
-  <match target="pattern">
-    <test name="family"><string>宋体</string></test>
-    <edit name="family" mode="assign" binding="strong"><string>WenQuanYi Zen Hei</string></edit>
-  </match>
-  <match target="pattern">
-    <test name="family"><string>SimHei</string></test>
-    <edit name="family" mode="assign" binding="strong"><string>WenQuanYi Zen Hei</string></edit>
-  </match>
-  <match target="pattern">
-    <test name="family"><string>黑体</string></test>
-    <edit name="family" mode="assign" binding="strong"><string>WenQuanYi Zen Hei</string></edit>
-  </match>
-  <match target="pattern">
-    <test name="family"><string>Microsoft YaHei</string></test>
-    <edit name="family" mode="assign" binding="strong"><string>WenQuanYi Micro Hei</string></edit>
-  </match>
-  <match target="pattern">
-    <test name="family"><string>微软雅黑</string></test>
-    <edit name="family" mode="assign" binding="strong"><string>WenQuanYi Micro Hei</string></edit>
-  </match>
-</fontconfig>
-EOF
+RUN mkdir -p /etc/fonts && printf '%s\n' \
+'<?xml version="1.0"?>' \
+'<!DOCTYPE fontconfig SYSTEM "fonts.dtd">' \
+'<fontconfig>' \
+'  <match target="pattern">' \
+'    <test name="family"><string>SimSun</string></test>' \
+'    <edit name="family" mode="assign" binding="strong"><string>WenQuanYi Zen Hei</string></edit>' \
+'  </match>' \
+'  <match target="pattern">' \
+'    <test name="family"><string>宋体</string></test>' \
+'    <edit name="family" mode="assign" binding="strong"><string>WenQuanYi Zen Hei</string></edit>' \
+'  </match>' \
+'  <match target="pattern">' \
+'    <test name="family"><string>SimHei</string></test>' \
+'    <edit name="family" mode="assign" binding="strong"><string>WenQuanYi Zen Hei</string></edit>' \
+'  </match>' \
+'  <match target="pattern">' \
+'    <test name="family"><string>黑体</string></test>' \
+'    <edit name="family" mode="assign" binding="strong"><string>WenQuanYi Zen Hei</string></edit>' \
+'  </match>' \
+'  <match target="pattern">' \
+'    <test name="family"><string>Microsoft YaHei</string></test>' \
+'    <edit name="family" mode="assign" binding="strong"><string>WenQuanYi Micro Hei</string></edit>' \
+'  </match>' \
+'  <match target="pattern">' \
+'    <test name="family"><string>微软雅黑</string></test>' \
+'    <edit name="family" mode="assign" binding="strong"><string>WenQuanYi Micro Hei</string></edit>' \
+'  </match>' \
+'</fontconfig>' > /etc/fonts/local.conf
+
+# 全局默认 GTK3 输入法配置为 fcitx
+RUN mkdir -p /etc/gtk-3.0 && printf "[Settings]\ngtk-im-module=fcitx\n" > /etc/gtk-3.0/settings.ini
 
 # 2. 根据目标架构下载并安装 TeleAgent deb 包，并预装 Python 核心文档库
-ARG TARGETARCH
+ARG TARGETARCH=amd64
 RUN set -ex; \
     echo "Building for target architecture: ${TARGETARCH}"; \
     if [ "$TARGETARCH" = "amd64" ]; then \
