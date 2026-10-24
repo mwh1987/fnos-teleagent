@@ -77,17 +77,17 @@ UseExtraTriggerKeyOnlyWhenUseItToInactivate=False
 IMSwitchKey=True
 EOF
 
-# 确保浮动状态栏常驻显示（在无系统托盘的 openbox/noVNC 桌面下极其关键，用户可直接点击 [汉] / [键] 切换中英文，防快捷键被浏览器拦截）
+# 确保浮动状态栏常驻显示（且系统托盘启用，双重保证鼠标可直接点击 [汉] / [拼] / 托盘图标切换输入法）
 cat << 'EOF' > /config/.config/fcitx/conf/fcitx-classic-ui.config
 [ClassicUI]
 MainWindowHideMode=Show
-UseTray=False
+UseTray=True
 VerticalList=False
 Font=WenQuanYi Micro Hei
 MenuFont=WenQuanYi Micro Hei
 FontSize=12
-MainWindowOffsetX=20
-MainWindowOffsetY=20
+MainWindowOffsetX=500
+MainWindowOffsetY=10
 EOF
 
 # 确保 GTK3 全局使用 fcitx 模块
@@ -95,6 +95,10 @@ cat << 'EOF' > /config/.config/gtk-3.0/settings.ini
 [Settings]
 gtk-im-module=fcitx
 EOF
+
+# 启动 tint2 任务栏（常驻底部 30px：提供多窗口切换/最小化一键还原、Chrome快捷启动、系统托盘及时间显示）
+pkill -9 tint2 2>/dev/null || true
+tint2 &
 
 # 杀掉可能残留的旧 fcitx，启动 Fcitx 守护进程
 pkill -9 fcitx 2>/dev/null || true
@@ -107,24 +111,6 @@ for i in 1 2 3 4 5 6; do
     fi
     sleep 0.5
 done
-
-# 后台监控：如果 TeleAgent 被最小化，自动在 0.5 秒内将其还原激活，防止用户误点最小化后黑屏无入口
-if [ -f /tmp/teleagent_watcher.pid ] && kill -0 $(cat /tmp/teleagent_watcher.pid 2>/dev/null) 2>/dev/null; then
-    :
-else
-    nohup sh -c '
-        while true; do
-            wid=$(wmctrl -l 2>/dev/null | grep -i "TeleAgent" | awk "{print \$1}")
-            if [ -n "$wid" ]; then
-                if xprop -id "$wid" _NET_WM_STATE 2>/dev/null | grep -q "_NET_WM_STATE_HIDDEN"; then
-                    wmctrl -i -a "$wid" 2>/dev/null || true
-                fi
-            fi
-            sleep 0.5
-        done
-    ' >/dev/null 2>&1 &
-    echo $! > /tmp/teleagent_watcher.pid
-fi
 
 # GPU 硬件加速动态检测（有核显/显卡时启用硬件加速，无则平稳降级）
 GPU_FLAGS="--disable-gpu"

@@ -9,8 +9,19 @@
 ## ✨ 特性亮点
 
 - 🛡️ **双版本发布支持**：
-  - **离线完整版（`teleagent-2.7.1-offline.fpk`，约 860MB，强烈推荐）**：内置预构建完整 Docker 镜像，秒级极速导入，不依赖外网拉取，100% 避免国内 Docker Hub 网络阻断或安装卡 80% 问题。
-  - **在线轻量版（`teleagent-2.7.1-online.fpk`，约 111KB）**：极小体积包，安装后自动从 Docker Hub（`mwh1987/teleagent-web:latest`）按需拉取镜像（适合已有加速源或海外网络环境）。
+  - **离线完整版（`teleagent-2.7.2-offline.fpk`，约 950MB，强烈推荐）**：内置预构建完整 Docker 镜像（含 Chrome 与全部运行库），秒级极速导入，不依赖外网拉取，100% 避免国内 Docker Hub 网络阻断或安装卡 80% 问题。
+  - **在线轻量版（`teleagent-2.7.2-online.fpk`，约 113KB）**：极小体积包，安装后自动从 Docker Hub（`mwh1987/teleagent-web:latest`）按需拉取镜像（适合已有加速源或海外网络环境）。
+- 🌐 **内置 Google Chrome 官方正式版浏览器 & 浏览器自动化支持**：
+  - 容器内预装 Google Chrome 官方 Stable 正式版，完美配合 TeleAgent 内置网页搜索、资料调研及 `@playwright/mcp` 等自动化 Agent 工具。
+  - 免去容器内智能体首次启动时因国内网络阻断无法下载 Playwright/Puppeteer 浏览器的困扰。
+  - 注入全局环境变量 `PLAYWRIGHT_CHROME_EXECUTABLE_PATH`、`PUPPETEER_EXECUTABLE_PATH`、`CHROME_BIN`，开箱即用。
+  - 底部任务栏内置 Google Chrome 快速启动按钮，用户可随时一键打开独立浏览器查阅网页。
+- 🖥️ **tint2 多窗口任务栏 & 窗口最小化一键还原管理**：
+  - 底部常驻轻量现代任务栏（内存占用 <25MB，CPU 0%），彻底解决 Openbox 桌面下窗口最小化后“黑屏/找不到还原入口”的问题。
+  - 无论 TeleAgent、Google Chrome 还是其他弹出对话框，窗口标签清晰陈列，单击任意标签立即还原置顶/最小化切换。
+- 🔤 **可视化鼠标点击切换输入法 & 键盘双模支持**：
+  - 顶部浮动常驻 Fcitx 状态栏，提供专属 `[汉] / [英]` 鼠标点击切换按钮，彻底规避宿主机浏览器拦截 `Ctrl+Space` 快捷键的痛点。
+  - 右下角系统托盘实时显示当前输入法图标，单击亦可快速切换；键盘支持单按 `Shift` 或 `Ctrl+Space` 无感切入中文。
 - 🧰 **开箱即用开发工具链 & 免密 Sudo**：
   - 容器内预装 `git`、`gcc/g++`、`make`、`unzip`、`zip`、`vim`、`nano` 等基础开发编译工具。
   - 用户 `app` 与 UID `1000` 具备免密 `sudo` 权限，方便随时在容器内调试、安装扩展组件。
@@ -18,14 +29,8 @@
   - 智能体底层 Python 3.12 环境内置预装 `openpyxl`、`python-docx`、`python-pptx`、`pandas`、`requests`、`numpy`。
   - 彻底修复默认清华源 403 阻断问题，默认注入阿里云官方高速源（`mirrors.aliyun.com`），第三方库安装秒级完成。
   - 针对中文字体配置 `SimSun`、`SimHei`、`Microsoft YaHei` 别名映射，彻底规避文档导出乱码与方块字（`□□□`）。
-- 🖥️ **窗口防呆防丢与自愈恢复**：
-  - **自动还原守护线程**：当误触客户端标题栏最小化 `-` 时，后台检测到隐藏状态后 0.5 秒内自动还原置顶。
-  - **桌面任意点击唤醒**：鼠标左键单击空白桌面任意区域直接激活 TeleAgent 窗口；右键/中键单击呼出系统级窗口任务列表菜单。
 - 🚀 **GPU 硬件加速自适应**：
   - 启动脚本智能探测 `/dev/dri/renderD128` 显卡渲染节点；检测到核显/显卡时自动启用 VA-API 硬件解码与 OpenGL 桌面级渲染加速，无 GPU 时平滑回退软件渲染。
-- 🔤 **原生中文拼音输入与剪贴板同步**：
-  - 容器内预置 Fcitx 拼音输入法与文泉驿微米黑/正黑高清中文字体，支持 `Ctrl+Space` 快捷切换。
-  - 支持宿主机与 Web 桌面双向剪贴板文字无缝复制粘贴。
 - 📁 **NAS 存储与工作空间无缝直通**：
   - 自动打通 TeleAgent 默认工作区（`TeleAgent的工作空间`）软链接直通飞牛挂载的 `/workspace`。
   - AI 任务自动生成的 Word/Excel/PPT/代码文件立即可见于飞牛文件管理器中，无需手动复制导出。
@@ -37,8 +42,8 @@
 
 ### 1. 下载安装包
 在本项目 [Releases](https://github.com/mwh1987/fnos-teleagent/releases) 页面下载适合您网络环境的 `.fpk`：
-- **国内绝大多数用户**：推荐下载 **`teleagent-2.7.1-offline.fpk`**（免配置加速源，秒装秒开）。
-- **已配置 Docker 镜像加速源或海外用户**：可下载 **`teleagent-2.7.1-online.fpk`**。
+- **国内绝大多数用户**：推荐下载 **`teleagent-2.7.2-offline.fpk`**（免配置加速源，秒装秒开）。
+- **已配置 Docker 镜像加速源或海外用户**：可下载 **`teleagent-2.7.2-online.fpk`**。
 
 ### 2. 飞牛应用中心手动安装
 1. 打开飞牛 fnOS 管理界面，进入 **应用中心**；

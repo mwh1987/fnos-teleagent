@@ -47,6 +47,7 @@ RUN set -ex; \
     im-config \
     dbus-x11 \
     xclip \
+    tint2 \
     fonts-wqy-zenhei \
     fonts-wqy-microhei \
     fontconfig \
@@ -113,14 +114,29 @@ RUN mkdir -p /etc/fonts && printf '%s\n' \
 # 全局默认 GTK3 输入法配置为 fcitx
 RUN mkdir -p /etc/gtk-3.0 && printf "[Settings]\ngtk-im-module=fcitx\n" > /etc/gtk-3.0/settings.ini
 
-# 2. 根据目标架构下载并安装 TeleAgent deb 包，并预装 Python 核心文档库
+# 2. 根据目标架构下载并安装 TeleAgent deb 包，内置 Google Chrome 官方正式版浏览器，并预装 Python 核心文档库
 ARG TARGETARCH=amd64
 RUN set -ex; \
     echo "Building for target architecture: ${TARGETARCH}"; \
     if [ "$TARGETARCH" = "amd64" ]; then \
         PKG_ARCH="amd64"; \
+        echo "Installing official Google Chrome Stable for amd64..."; \
+        sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list.d/debian.sources 2>/dev/null || sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list 2>/dev/null || true; \
+        apt-get update && apt-get install -y --no-install-recommends fonts-liberation libvulkan1; \
+        wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb; \
+        dpkg -i /tmp/chrome.deb; \
+        rm -f /tmp/chrome.deb; \
+        if [ -f /opt/google/chrome/google-chrome ]; then \
+            mv /opt/google/chrome/google-chrome /opt/google/chrome/google-chrome.orig && \
+            printf '#!/bin/bash\nexec /opt/google/chrome/google-chrome.orig --no-sandbox --disable-dev-shm-usage --test-type "$@"\n' > /opt/google/chrome/google-chrome && \
+            chmod +x /opt/google/chrome/google-chrome; \
+        fi; \
     elif [ "$TARGETARCH" = "arm64" ]; then \
         PKG_ARCH="arm64"; \
+        echo "Installing Chromium for arm64..."; \
+        apt-get update && apt-get install -y --no-install-recommends chromium chromium-common; \
+        ln -sfn /usr/bin/chromium /usr/bin/google-chrome; \
+        ln -sfn /usr/bin/chromium /usr/bin/google-chrome-stable; \
     else \
         echo "Unsupported architecture: ${TARGETARCH}" && exit 1; \
     fi; \
@@ -142,11 +158,23 @@ RUN set -ex; \
         rm -rf /tmp/py-runtime; \
     fi; \
     \
-    # 2.2 瘦身优化：删除无用文档、大体积许可证页面及 Windows/Mac 图标残留
+    # 2.2 配置 tint2 任务栏默认参数（底部常驻 30px，提供 Chrome 启动图标、窗口列表按钮、系统托盘及时间显示）
+    if [ -f /etc/xdg/tint2/tint2rc ]; then \
+        sed -i '/launcher_item_app/d' /etc/xdg/tint2/tint2rc && \
+        echo "launcher_item_app = /usr/share/applications/google-chrome.desktop" >> /etc/xdg/tint2/tint2rc; \
+    fi; \
+    \
+    # 2.3 瘦身优化：删除无用文档、大体积许可证页面及 Windows/Mac 图标残留
     rm -f /opt/TeleAgent/LICENSES.chromium.html \
           /opt/TeleAgent/resources/icon.ico \
           /opt/TeleAgent/resources/icon.icns; \
-    rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/info/* /var/cache/apt/archives/*
+    rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/info/* /var/cache/apt/archives/* /var/lib/apt/lists/*
+
+# 为自动化工具（Playwright / Puppeteer / MCP Agent）注入全局浏览器环境变量
+ENV PLAYWRIGHT_CHROME_EXECUTABLE_PATH=/usr/bin/google-chrome
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome
+ENV CHROME_BIN=/usr/bin/google-chrome
+ENV CHROME_PATH=/usr/bin/google-chrome
 
 # 3. 复制启动脚本
 COPY startapp.sh /startapp.sh
