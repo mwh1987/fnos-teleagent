@@ -1,12 +1,12 @@
-# 星辰超级智能体（TeleAgent）Web GUI 镜像
+# 中国电信星辰超级智能体（TeleAgent）Docker Web 版
 
 [![GitHub Repo](https://img.shields.io/badge/GitHub-mwh1987%2Ffnos--teleagent-blue?logo=github)](https://github.com/mwh1987/fnos-teleagent)
 [![Docker Pulls](https://img.shields.io/docker/pulls/mwh1987/teleagent-web)](https://hub.docker.com/r/mwh1987/teleagent-web)
 [![Docker Image Size](https://img.shields.io/docker/image-size/mwh1987/teleagent-web/latest)](https://hub.docker.com/r/mwh1987/teleagent-web)
 
-中国电信自研 **星辰超级智能体（TeleAgent）** 的 Docker Web GUI 容器化实现。基于 Debian 12 与 noVNC 技术，无需在电脑或移动端安装任何客户端，只需浏览器即可在任意设备、NAS（飞牛 fnOS、群晖 Synology、威联通 QNAP、绿联 UGOS、Unraid 等）或云服务器上直接使用 TeleAgent 的完整 AI 办公与任务执行能力。
+本项目为中国电信自研 **星辰超级智能体（TeleAgent）** 的全功能 Docker Web GUI 镜像。基于 Debian 12 与 noVNC 技术，**无需在任何设备上安装客户端**，通过现代浏览器即可在各类 NAS 私有云（群晖 Synology、威联通 QNAP、绿联 UGOS、飞牛 fnOS、极空间、Unraid、TrueNAS 等）、Linux 服务器或云主机上以网页形式直接使用 TeleAgent 完整的 AI 办公与自动化任务执行能力。
 
-GitHub 开源仓库与飞牛 FPK 打包源码：[https://github.com/mwh1987/fnos-teleagent](https://github.com/mwh1987/fnos-teleagent)
+GitHub 源码仓库与飞牛 FPK 打包工程：[https://github.com/mwh1987/fnos-teleagent](https://github.com/mwh1987/fnos-teleagent)
 
 ---
 
