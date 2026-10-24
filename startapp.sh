@@ -68,22 +68,26 @@ EnabledIMList=fcitx-keyboard-us:True,pinyin:True
 EOF
 fi
 
-# 确保快捷键配置（Ctrl+Space 激活，Shift 切换中英文）
+# 确保快捷键配置（Ctrl+Space 激活，左 Shift 切换中英文，且允许直接按 Shift 唤醒激活）
 cat << 'EOF' > /config/.config/fcitx/config
 [Hotkey]
 TriggerKey=CTRL_SPACE
-SwitchKey=Both Shift
+SwitchKey=L_SHIFT
+UseExtraTriggerKeyOnlyWhenUseItToInactivate=False
 IMSwitchKey=True
 EOF
 
-# 确保浮动状态栏常驻显示（在无系统托盘的 openbox/noVNC 桌面下极其关键，用户可直接点击 [拼] / [键] 切换中英文，防快捷键被浏览器拦截）
+# 确保浮动状态栏常驻显示（在无系统托盘的 openbox/noVNC 桌面下极其关键，用户可直接点击 [汉] / [键] 切换中英文，防快捷键被浏览器拦截）
 cat << 'EOF' > /config/.config/fcitx/conf/fcitx-classic-ui.config
 [ClassicUI]
-MainWindowHideMode=Always
+MainWindowHideMode=Show
+UseTray=False
 VerticalList=False
 Font=WenQuanYi Micro Hei
 MenuFont=WenQuanYi Micro Hei
 FontSize=12
+MainWindowOffsetX=20
+MainWindowOffsetY=20
 EOF
 
 # 确保 GTK3 全局使用 fcitx 模块
@@ -93,7 +97,7 @@ gtk-im-module=fcitx
 EOF
 
 # 杀掉可能残留的旧 fcitx，启动 Fcitx 守护进程
-killall -9 fcitx 2>/dev/null || true
+pkill -9 fcitx 2>/dev/null || true
 fcitx -d 2>/dev/null &
 
 # 轮询等待 Fcitx 就绪（最多等待 3 秒）
