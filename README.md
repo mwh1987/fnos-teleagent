@@ -96,6 +96,64 @@ fnpack build --directory fpk
 
 ---
 
+## 🐳 通用 Docker 部署（非飞牛 / 群晖 / 威联通 / 纯 Linux）
+
+如果您不在飞牛私有云环境下，也可以直接使用本镜像在任意 Linux 服务器、群晖（Synology）、威联通（QNAP）或云主机上以 Web GUI 形式运行：
+
+### Docker Run 命令行
+
+```bash
+docker run -d \
+  --name teleagent-web \
+  --restart unless-stopped \
+  -p 5800:5800 \
+  -v /path/to/config:/config \
+  -v /path/to/workspace:/workspace \
+  -e USER_ID=1000 \
+  -e GROUP_ID=1000 \
+  -e TZ=Asia/Shanghai \
+  -e DISPLAY_WIDTH=1440 \
+  -e DISPLAY_HEIGHT=900 \
+  --shm-size=1g \
+  mwh1987/teleagent-web:latest
+```
+
+> **GPU 硬件加速（可选）**：如果宿主机具备核显/独立显卡，添加 `--device /dev/dri:/dev/dri` 参数即可自动开启 VA-API 硬件解码与 OpenGL 加速。
+
+### Docker Compose
+
+```yaml
+version: "3.8"
+
+services:
+  teleagent:
+    image: mwh1987/teleagent-web:latest
+    container_name: teleagent-web
+    restart: unless-stopped
+    ports:
+      - "5800:5800"
+    environment:
+      - USER_ID=1000
+      - GROUP_ID=1000
+      - TAKE_CONFIG_OWNERSHIP=1
+      - TZ=Asia/Shanghai
+      - DISPLAY_WIDTH=1440
+      - DISPLAY_HEIGHT=900
+      - WEB_HOST_CLIPBOARD_SYNC=1
+      - PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
+      - PIP_TRUSTED_HOST=mirrors.aliyun.com
+    volumes:
+      - ./config:/config
+      - ./workspace:/workspace
+    devices:
+      - /dev/dri:/dev/dri # 可选：开启 GPU 渲染硬件加速
+    shm_size: "1g"
+```
+
+访问地址：浏览器打开 `http://<服务器IP>:5800` 即可开始使用。
+
+---
+
 ## 📄 免责声明与版权
 - TeleAgent 客户端归 **中电信人工智能科技（北京）有限公司** 版权所有。
 - 本项目仅提供在飞牛私有云（fnOS）环境下的 Docker 适配包装与应用集成方案。
