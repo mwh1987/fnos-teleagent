@@ -9,6 +9,7 @@ RUN set -ex; \
     if [ -L /etc/group ]; then rm -f /etc/group && cp /usr/share/base-passwd/group.master /etc/group; fi; \
     if [ -L /etc/passwd ]; then rm -f /etc/passwd && cp /usr/share/base-passwd/passwd.master /etc/passwd; fi; \
     if [ -L /var/log ]; then rm -f /var/log && mkdir -p /var/log; fi; \
+    sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list.d/debian.sources 2>/dev/null || sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list 2>/dev/null || true; \
     apt-get update && apt-get install -y --no-install-recommends \
     wget \
     curl \
