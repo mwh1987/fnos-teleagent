@@ -73,19 +73,15 @@ fnos-teleagent/
     ├── config/
     │   ├── privilege           # 权限声明
     │   └── resource            # 资源与共享目录声明
-    ├── wizard/
-    │   ├── install             # 安装向导表单配置
-    │   └── config              # 应用设置表单配置
     ├── cmd/
     │   ├── main                # 运行状态检查入口
-    │   ├── install_callback    # 安装后生成环境变量脚本
-    │   └── config_callback     # 设置修改后更新脚本
+    │   ├── install_callback    # 安装初始化与工作区配置脚本
+    │   └── config_callback     # 配置更新脚本
     └── app/
         ├── docker/
-        │   └── docker-compose.yaml # 容器编排 (Macvlan 网络)
+        │   └── docker-compose.yaml # 容器编排 (Bridge 桥接端口映射)
         └── ui/
-            ├── config          # 桌面入口定义
-            └── index.cgi       # 动态 IP 跳转引导网关
+            └── config          # 桌面入口定义
 ```
 
 ### 本地构建 FPK

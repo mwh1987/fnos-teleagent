@@ -2,19 +2,16 @@
 
 # 更新 Docker Compose 读取的 .env 环境变量文件
 ENV_FILE="${TRIM_APPDEST}/docker/.env"
+[ -z "$TRIM_APPDEST" ] && TRIM_APPDEST="/vol1/@appcenter/teleagent"
+VOLUME_ROOT="${TRIM_APPDEST%%/@appcenter*}"
+[ -z "$VOLUME_ROOT" ] && VOLUME_ROOT="/vol1"
+WORKSPACE_HOST="${VOLUME_ROOT}/@appshare/teleagent/workspace"
 
-PARENT_NIC="${wizard_parent_nic:-eth0}"
-SUBNET="${wizard_subnet:-192.168.1.0/24}"
-GATEWAY="${wizard_gateway:-192.168.1.1}"
-STATIC_IP="${wizard_ip:-192.168.1.188}"
-PORT="${wizard_port:-5800}"
+PORT="5800"
 
 cat <<EOF > "$ENV_FILE"
-PARENT_NIC=$PARENT_NIC
-SUBNET=$SUBNET
-GATEWAY=$GATEWAY
-STATIC_IP=$STATIC_IP
 PORT=$PORT
+WORKSPACE_PATH=$WORKSPACE_HOST
 EOF
 
 chmod 644 "$ENV_FILE"
