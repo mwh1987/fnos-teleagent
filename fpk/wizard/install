@@ -1,0 +1,23 @@
+[
+  {
+    "stepTitle": "Web 访问端口设置",
+    "items": [
+      {
+        "type": "tips",
+        "helpText": "默认 Web 端口为 5800。如与其他应用冲突，可修改为您所需的空闲端口。"
+      },
+      {
+        "type": "text",
+        "field": "wizard_port",
+        "label": "Web 端口",
+        "initValue": "5800",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入端口号（推荐 5800）"
+          }
+        ]
+      }
+    ]
+  }
+]

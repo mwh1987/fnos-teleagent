@@ -11,5 +11,5 @@ os_min_version=1.0.0
 desktop_uidir=ui
 desktop_applaunchname=teleagent.main
 service_port=5800
-checkport=false
+checkport=true
 ctl_stop=true

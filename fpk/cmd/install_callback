@@ -37,7 +37,7 @@ if [ -d "${TRIM_APPDEST}/data" ]; then
 fi
 
 ENV_FILE="${TRIM_APPDEST}/docker/.env"
-PORT="5800"
+PORT="${wizard_port:-5800}"
 
 cat <<EOF > "$ENV_FILE"
 PORT=$PORT
@@ -45,6 +45,11 @@ WORKSPACE_PATH=$WORKSPACE_HOST
 EOF
 
 chmod 644 "$ENV_FILE"
+
+# 同步更新桌面快捷方式中的访问端口
+if [ -f "${TRIM_APPDEST}/ui/config" ]; then
+    sed -i "s/\"port\": \"[0-9]*\"/\"port\": \"$PORT\"/g" "${TRIM_APPDEST}/ui/config" 2>/dev/null || true
+fi
 
 # 离线自动载入 Docker 镜像（支持无网/弱网离线部署）
 if [ -f "${TRIM_APPDEST}/image.tar.gz" ]; then

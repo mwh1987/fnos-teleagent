@@ -73,6 +73,9 @@ fnos-teleagent/
     ├── config/
     │   ├── privilege           # 权限声明
     │   └── resource            # 资源与共享目录声明
+    ├── wizard/
+    │   ├── install             # 极简端口配置向导（默认 5800，可自定义）
+    │   └── config              # 应用端口修改配置向导
     ├── cmd/
     │   ├── main                # 运行状态检查入口
     │   ├── install_callback    # 安装初始化与工作区配置脚本

@@ -1,0 +1,23 @@
+[
+  {
+    "stepTitle": "修改 Web 访问端口",
+    "items": [
+      {
+        "type": "tips",
+        "helpText": "修改端口后将自动重启 TeleAgent 容器生效。"
+      },
+      {
+        "type": "text",
+        "field": "wizard_port",
+        "label": "Web 端口",
+        "initValue": "5800",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入端口号（推荐 5800）"
+          }
+        ]
+      }
+    ]
+  }
+]

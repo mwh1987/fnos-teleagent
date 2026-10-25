@@ -101,7 +101,7 @@ jobs:
 
             - **版本**：2.7.3
             - **架构**：全平台通用（x86_64 / arm64）
-            - **网络模式**：Bridge 桥接端口映射（默认 Web 端口 5800，开箱即用，零弹窗免配置）
+            - **网络模式**：Bridge 桥接端口映射（默认 Web 端口 5800，支持冲突自动拦截与自定义端口）
             - **镜像仓库**：`mwh1987/teleagent-web:2.7.3` 与 `ghcr.io/${{ github.repository_owner }}/teleagent-web:latest`
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
