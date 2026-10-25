@@ -3,6 +3,36 @@ exec > /tmp/teleagent_upgrade.log 2>&1
 set -ex
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 
+[ -z "$TRIM_APPDEST" ] && TRIM_APPDEST="/vol1/@appcenter/teleagent"
+[ -z "$TRIM_PKGVAR" ] && TRIM_PKGVAR="/vol1/@appdata/teleagent"
+VOLUME_ROOT="${TRIM_APPDEST%%/@appcenter*}"
+[ -z "$VOLUME_ROOT" ] && VOLUME_ROOT="/vol1"
+
+if [ -n "$TRIM_DATA_SHARE_PATHS" ] && [ -d "$TRIM_DATA_SHARE_PATHS" ]; then
+    WORKSPACE_HOST="$TRIM_DATA_SHARE_PATHS"
+elif [ -n "$TRIM_APPSHARE" ] && [ -d "$TRIM_APPSHARE/teleagent/workspace" ]; then
+    WORKSPACE_HOST="$TRIM_APPSHARE/teleagent/workspace"
+elif [ -d "${VOLUME_ROOT}/@appshare/teleagent/workspace" ]; then
+    WORKSPACE_HOST="${VOLUME_ROOT}/@appshare/teleagent/workspace"
+else
+    WORKSPACE_HOST="${VOLUME_ROOT}/@appshare/teleagent/workspace"
+fi
+
+mkdir -p "${WORKSPACE_HOST}"
+chmod -R 777 "${TRIM_PKGVAR}/config" "${WORKSPACE_HOST}" 2>/dev/null || true
+
+# 自动平滑迁移老版本 @appcenter/teleagent/data 中的历史产物到共享目录
+if [ -d "${TRIM_APPDEST}/data" ]; then
+    cp -rn "${TRIM_APPDEST}/data"/* "${WORKSPACE_HOST}/" 2>/dev/null || true
+fi
+
+# 更新 .env 环境变量
+ENV_FILE="${TRIM_APPDEST}/docker/.env"
+if [ -f "$ENV_FILE" ]; then
+    sed -i '/WORKSPACE_PATH=/d' "$ENV_FILE" 2>/dev/null || true
+    echo "WORKSPACE_PATH=$WORKSPACE_HOST" >> "$ENV_FILE"
+fi
+
 # 离线自动载入 Docker 镜像
 if [ -f "${TRIM_APPDEST}/image.tar.gz" ]; then
     docker load -i "${TRIM_APPDEST}/image.tar.gz"

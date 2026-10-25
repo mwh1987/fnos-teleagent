@@ -10,10 +10,31 @@ export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 [ -z "$TRIM_APPDEST" ] && TRIM_APPDEST="/vol1/@appcenter/teleagent"
 [ -z "$TRIM_PKGVAR" ] && TRIM_PKGVAR="/vol1/@appdata/teleagent"
 
+VOLUME_ROOT="${TRIM_APPDEST%%/@appcenter*}"
+[ -z "$VOLUME_ROOT" ] && VOLUME_ROOT="/vol1"
+
+# 解析飞牛文件管理中用户可见的应用共享卷 (@appshare) 路径
+if [ -n "$TRIM_DATA_SHARE_PATHS" ] && [ -d "$TRIM_DATA_SHARE_PATHS" ]; then
+    WORKSPACE_HOST="$TRIM_DATA_SHARE_PATHS"
+elif [ -n "$TRIM_APPSHARE" ] && [ -d "$TRIM_APPSHARE/teleagent/workspace" ]; then
+    WORKSPACE_HOST="$TRIM_APPSHARE/teleagent/workspace"
+elif [ -d "${VOLUME_ROOT}/@appshare/teleagent/workspace" ]; then
+    WORKSPACE_HOST="${VOLUME_ROOT}/@appshare/teleagent/workspace"
+else
+    WORKSPACE_HOST="${VOLUME_ROOT}/@appshare/teleagent/workspace"
+fi
+
 mkdir -p "${TRIM_APPDEST}/docker"
-mkdir -p "${TRIM_APPDEST}/data"
 mkdir -p "${TRIM_PKGVAR}/config"
-chmod -R 777 "${TRIM_APPDEST}/data" "${TRIM_PKGVAR}/config" 2>/dev/null || true
+mkdir -p "${WORKSPACE_HOST}"
+
+# 权限全开放，确保容器内部进程 (uid 1000) 与飞牛 NAS 本地用户均可无障碍读写
+chmod -R 777 "${TRIM_PKGVAR}/config" "${WORKSPACE_HOST}" 2>/dev/null || true
+
+# 自动平滑迁移老版本误落入 @appcenter/teleagent/data 中的历史产物到共享目录
+if [ -d "${TRIM_APPDEST}/data" ]; then
+    cp -rn "${TRIM_APPDEST}/data"/* "${WORKSPACE_HOST}/" 2>/dev/null || true
+fi
 
 ENV_FILE="${TRIM_APPDEST}/docker/.env"
 PARENT_NIC="${wizard_parent_nic:-eth0}"
@@ -28,6 +49,7 @@ SUBNET=$SUBNET
 GATEWAY=$GATEWAY
 STATIC_IP=$STATIC_IP
 PORT=$PORT
+WORKSPACE_PATH=$WORKSPACE_HOST
 EOF
 
 chmod 644 "$ENV_FILE"

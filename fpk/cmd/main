@@ -18,6 +18,11 @@ is_docker_running () {
 case $1 in
 start)
     if [ -f "$COMPOSE_FILE" ]; then
+        VOLUME_ROOT="${TRIM_APPDEST%%/@appcenter*}"
+        [ -z "$VOLUME_ROOT" ] && VOLUME_ROOT="/vol1"
+        WORKSPACE_HOST="${VOLUME_ROOT}/@appshare/teleagent/workspace"
+        mkdir -p "$WORKSPACE_HOST" 2>/dev/null || true
+        chmod -R 777 "$WORKSPACE_HOST" "${TRIM_PKGVAR}/config" 2>/dev/null || true
         export COMPOSE_HTTP_TIMEOUT=600
         docker compose -f "$COMPOSE_FILE" up -d
     fi

@@ -19,5 +19,5 @@ services:
       - PIP_TRUSTED_HOST=mirrors.aliyun.com
     volumes:
       - "${TRIM_PKGVAR}/config:/config"
-      - "${TRIM_APPDEST}/data:/workspace"
+      - "${WORKSPACE_PATH:-/vol1/@appshare/teleagent/workspace}:/workspace"
     shm_size: "1g"

@@ -34,8 +34,9 @@ trusted-host = mirrors.aliyun.com
 timeout = 60
 EOF
 
-# 关键：将 TeleAgent 默认工作空间软链接至飞牛 NAS 挂载的 /workspace
-# 确保 TeleAgent 生成的所有文档和报表在飞牛“文件管理 -> teleagent/workspace”直接可见
+# 关键：将 TeleAgent 默认工作空间软链接至容器挂载的 /workspace
+# 在飞牛 NAS 上对应用户可见的共享目录（/volX/@appshare/teleagent/workspace）
+# 确保 TeleAgent 生成的所有文档和报表在飞牛“文件管理 -> 应用数据 -> teleagent -> workspace”直接可见
 if [ -d /workspace ]; then
     WORKSPACE_DIR="/config/.local/share/TeleAgent/TeleAgent的工作空间"
     if [ ! -L "$WORKSPACE_DIR" ]; then
