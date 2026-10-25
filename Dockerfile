@@ -54,8 +54,11 @@ RUN set -ex; \
     qml-module-qtquick-window2 \
     fcitx \
     fcitx-pinyin \
+    fcitx-table \
     fcitx-table-wbpy \
     fcitx-table-wubi \
+    fcitx-table-all \
+    fcitx-config-gtk \
     fcitx-libs \
     fcitx-frontend-qt5 \
     fcitx-frontend-gtk3 \
