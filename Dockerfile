@@ -136,10 +136,11 @@ RUN mkdir -p /etc/fonts && printf '%s\n' \
 RUN mkdir -p /etc/gtk-3.0 && printf "[Settings]\ngtk-im-module=fcitx\n" > /etc/gtk-3.0/settings.ini
 
 # 2. 根据目标架构下载并安装 TeleAgent deb 包，内置 Google Chrome 官方正式版浏览器，并预装 Python 核心文档库
-ARG TARGETARCH=amd64
+ARG TARGETARCH
 RUN set -ex; \
-    echo "Building for target architecture: ${TARGETARCH}"; \
-    if [ "$TARGETARCH" = "amd64" ]; then \
+    ARCH="$(dpkg --print-architecture)"; \
+    echo "Detected container architecture: ${ARCH} (BuildKit TARGETARCH: ${TARGETARCH})"; \
+    if [ "$ARCH" = "amd64" ]; then \
         PKG_ARCH="amd64"; \
         echo "Installing official Google Chrome Stable for amd64..."; \
         sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list.d/debian.sources 2>/dev/null || sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list 2>/dev/null || true; \
@@ -152,14 +153,23 @@ RUN set -ex; \
             printf '#!/bin/bash\nexec /opt/google/chrome/google-chrome.orig --no-sandbox --disable-dev-shm-usage --test-type "$@"\n' > /opt/google/chrome/google-chrome && \
             chmod +x /opt/google/chrome/google-chrome; \
         fi; \
-    elif [ "$TARGETARCH" = "arm64" ]; then \
+    elif [ "$ARCH" = "arm64" ]; then \
         PKG_ARCH="arm64"; \
         echo "Installing Chromium for arm64..."; \
-        apt-get update && apt-get install -y --no-install-recommends chromium chromium-common; \
+        sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list.d/debian.sources 2>/dev/null || sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list 2>/dev/null || true; \
+        apt-get update && apt-get install -y --no-install-recommends chromium; \
+        if [ -f /usr/bin/chromium ]; then \
+            mv /usr/bin/chromium /usr/bin/chromium.orig && \
+            printf '#!/bin/bash\nexec /usr/bin/chromium.orig --no-sandbox --disable-dev-shm-usage --test-type "$@"\n' > /usr/bin/chromium && \
+            chmod +x /usr/bin/chromium; \
+        fi; \
         ln -sfn /usr/bin/chromium /usr/bin/google-chrome; \
         ln -sfn /usr/bin/chromium /usr/bin/google-chrome-stable; \
+        if [ -f /usr/share/applications/chromium.desktop ]; then \
+            ln -sfn /usr/share/applications/chromium.desktop /usr/share/applications/google-chrome.desktop; \
+        fi; \
     else \
-        echo "Unsupported architecture: ${TARGETARCH}" && exit 1; \
+        echo "Unsupported architecture: ${ARCH}" && exit 1; \
     fi; \
     DEB_URL="https://cdn01.teleai.com.cn/packages/2.7.1/TeleAgent-2.7.1-${PKG_ARCH}.deb"; \
     echo "Downloading ${DEB_URL}..."; \
@@ -168,16 +178,18 @@ RUN set -ex; \
     rm -f /tmp/teleagent.deb; \
     \
     # 2.1 针对 TeleAgent 内置 Python 运行时注入常用办公处理库 (openpyxl, python-docx, python-pptx, pandas, requests, numpy)
-    if [ -f /opt/TeleAgent/resources/python-linux-x64.tar.gz ]; then \
-        echo "Injecting office libraries into python-linux-x64.tar.gz..."; \
-        mkdir -p /tmp/py-runtime && \
-        tar -xzf /opt/TeleAgent/resources/python-linux-x64.tar.gz -C /tmp/py-runtime && \
-        /tmp/py-runtime/python/bin/pip install --no-cache-dir \
-            -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com \
-            openpyxl python-docx python-pptx pandas requests numpy && \
-        tar -czf /opt/TeleAgent/resources/python-linux-x64.tar.gz -C /tmp/py-runtime python && \
-        rm -rf /tmp/py-runtime; \
-    fi; \
+    for py_tar in /opt/TeleAgent/resources/python-linux-*.tar.gz; do \
+        if [ -f "$py_tar" ]; then \
+            echo "Injecting office libraries into $py_tar..."; \
+            mkdir -p /tmp/py-runtime && \
+            tar -xzf "$py_tar" -C /tmp/py-runtime && \
+            /tmp/py-runtime/python/bin/pip install --no-cache-dir \
+                -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com \
+                openpyxl python-docx python-pptx pandas requests numpy && \
+            tar -czf "$py_tar" -C /tmp/py-runtime python && \
+            rm -rf /tmp/py-runtime; \
+        fi; \
+    done; \
     \
     # 2.2 配置 tint2 任务栏默认参数（底部常驻 30px，提供 Chrome 启动图标、窗口列表按钮、系统托盘及时间显示）
     if [ -f /etc/xdg/tint2/tint2rc ]; then \
