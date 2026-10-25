@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   teleagent:
-    image: mwh1987/teleagent-web:2.7.2
+    image: mwh1987/teleagent-web:2.7.3
     container_name: fnos-teleagent
     restart: unless-stopped
     ports:
