@@ -69,8 +69,8 @@ if [ -f /usr/lib/x86_64-linux-gnu/libpulse-simple.so.0 ] && [ ! -f /usr/lib/libp
     ln -sf /usr/lib/x86_64-linux-gnu/libpulse-simple.so.0 /usr/lib/libpulse-simple.so.0 2>/dev/null || true
 fi
 
-# 强制配置 Fcitx 4 规范配置文件（支持五笔拼音、搜狗拼音、经典拼音）
-IM_LIST="fcitx-keyboard-us:True,wbpy:True,sogoupinyin:True,pinyin:True"
+# 强制配置 Fcitx 4 规范配置文件（支持五笔拼音、极品五笔、经典拼音）
+IM_LIST="fcitx-keyboard-us:True,wbpy:True,wubi:True,pinyin:True"
 if [ ! -f /config/.config/fcitx/profile ] || grep -q "Profile/Item" /config/.config/fcitx/profile 2>/dev/null || ! grep -q "wbpy:True" /config/.config/fcitx/profile 2>/dev/null; then
 cat << EOF > /config/.config/fcitx/profile
 [Profile]
