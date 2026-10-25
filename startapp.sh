@@ -60,12 +60,22 @@ if [ -f /config/.local/share/TeleAgent/runtimes/python/bin/python3 ]; then
     fi
 fi
 
-# 强制配置 Fcitx 4 规范配置文件（如果文件缺失或为旧版非兼容格式则自动修复覆盖）
-if [ ! -f /config/.config/fcitx/profile ] || grep -q "Profile/Item" /config/.config/fcitx/profile 2>/dev/null || ! grep -q "EnabledIMList" /config/.config/fcitx/profile 2>/dev/null; then
-cat << 'EOF' > /config/.config/fcitx/profile
+# 搜狗输入法与多输入法（五笔/拼音）兼容性自适应修复
+if [ -d /opt/sogoupinyin/files/lib/qt5 ] && [ ! -d /opt/sogoupinyin/files/lib/qt5_old ]; then
+    mv /opt/sogoupinyin/files/lib/qt5 /opt/sogoupinyin/files/lib/qt5_old
+    ln -sfn /usr/lib/x86_64-linux-gnu/qt5 /opt/sogoupinyin/files/lib/qt5 2>/dev/null || true
+fi
+if [ -f /usr/lib/x86_64-linux-gnu/libpulse-simple.so.0 ] && [ ! -f /usr/lib/libpulse-simple.so.0 ]; then
+    ln -sf /usr/lib/x86_64-linux-gnu/libpulse-simple.so.0 /usr/lib/libpulse-simple.so.0 2>/dev/null || true
+fi
+
+# 强制配置 Fcitx 4 规范配置文件（支持五笔拼音、搜狗拼音、经典拼音）
+IM_LIST="fcitx-keyboard-us:True,wbpy:True,sogoupinyin:True,pinyin:True"
+if [ ! -f /config/.config/fcitx/profile ] || grep -q "Profile/Item" /config/.config/fcitx/profile 2>/dev/null || ! grep -q "wbpy:True" /config/.config/fcitx/profile 2>/dev/null; then
+cat << EOF > /config/.config/fcitx/profile
 [Profile]
 IMName=fcitx-keyboard-us
-EnabledIMList=fcitx-keyboard-us:True,pinyin:True
+EnabledIMList=${IM_LIST}
 EOF
 fi
 

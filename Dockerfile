@@ -39,8 +39,25 @@ RUN set -ex; \
     x11-utils \
     wmctrl \
     xdotool \
+    libpulse0 \
+    libqt5core5a \
+    libqt5gui5 \
+    libqt5widgets5 \
+    libqt5qml5 \
+    libqt5quick5 \
+    libqt5quickwidgets5 \
+    libqt5dbus5 \
+    libgsettings-qt1 \
+    qml-module-qtquick2 \
+    qml-module-qtquick-controls \
+    qml-module-qtquick-controls2 \
+    qml-module-qtquick-window2 \
     fcitx \
     fcitx-pinyin \
+    fcitx-table-wbpy \
+    fcitx-table-wubi \
+    fcitx-libs \
+    fcitx-frontend-qt5 \
     fcitx-frontend-gtk3 \
     fcitx-frontend-gtk2 \
     fcitx-ui-classic \
