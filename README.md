@@ -8,9 +8,12 @@
 
 ## ✨ 特性亮点
 
-- 🛡️ **双版本发布支持**：
-  - **离线完整版（`teleagent-2.7.2-offline.fpk`，约 950MB，强烈推荐）**：内置预构建完整 Docker 镜像（含 Chrome 与全部运行库），秒级极速导入，不依赖外网拉取，100% 避免国内 Docker Hub 网络阻断或安装卡 80% 问题。
-  - **在线轻量版（`teleagent-2.7.2-online.fpk`，约 113KB）**：极小体积包，安装后自动从 Docker Hub（`mwh1987/teleagent-web:latest`）按需拉取镜像（适合已有加速源或海外网络环境）。
+- 📦 **轻量极速在线安装包（`teleagent-2.7.3-online.fpk`，仅 ~112KB）**：
+  - 体积轻巧秒级下载，安装时自动拉取多架构（amd64 / arm64）Docker 镜像，开箱即用。
+  - 镜像同时托管于 Docker Hub（`mwh1987/teleagent-web`）与 GitHub Packages（`ghcr.io`），支持国内加速镜像源。
+- 🔌 **极简 Bridge 端口映射与智能冲突拦截**：
+  - 安装向导仅需配置访问端口（默认 `5800`，无需任何复杂 IP/网关/子网配置）。
+  - 启用 `checkport=true` 端口冲突自检，端口被占用时安装向导自动拦截提醒；修改配置后桌面图标自动同步新端口。
 - 🌐 **内置 Google Chrome 官方正式版浏览器 & 浏览器自动化支持**：
   - 容器内预装 Google Chrome 官方 Stable 正式版，完美配合 TeleAgent 内置网页搜索、资料调研及 `@playwright/mcp` 等自动化 Agent 工具。
   - 免去容器内智能体首次启动时因国内网络阻断无法下载 Playwright/Puppeteer 浏览器的困扰。
@@ -31,9 +34,9 @@
   - 针对中文字体配置 `SimSun`、`SimHei`、`Microsoft YaHei` 别名映射，彻底规避文档导出乱码与方块字（`□□□`）。
 - 🚀 **GPU 硬件加速自适应**：
   - 启动脚本智能探测 `/dev/dri/renderD128` 显卡渲染节点；检测到核显/显卡时自动启用 VA-API 硬件解码与 OpenGL 桌面级渲染加速，无 GPU 时平滑回退软件渲染。
-- 📁 **NAS 存储与工作空间无缝直通**：
-  - 自动打通 TeleAgent 默认工作区（`TeleAgent的工作空间`）软链接直通飞牛挂载的 `/workspace`。
-  - AI 任务自动生成的 Word/Excel/PPT/代码文件立即可见于飞牛文件管理器中，无需手动复制导出。
+- 📁 **NAS 存储与工作空间无缝直通（@appshare 共享机制）**：
+  - 通过 `config/resource` 的 `data-share` 机制直通宿主机用户可见目录 `/volX/@appshare/teleagent/workspace`。
+  - AI 任务自动生成的 Word/Excel/PPT/代码文件立即可见于飞牛“文件管理 -> 应用数据 -> teleagent -> workspace”，无需手动复制导出。
   - 账号登录凭证与配置持久化保存在飞牛应用数据目录中，重启升级不丢状态。
 
 ---
@@ -41,15 +44,13 @@
 ## 📥 安装使用步骤
 
 ### 1. 下载安装包
-在本项目 [Releases](https://github.com/mwh1987/fnos-teleagent/releases) 页面下载适合您网络环境的 `.fpk`：
-- **国内绝大多数用户**：推荐下载 **`teleagent-2.7.2-offline.fpk`**（免配置加速源，秒装秒开）。
-- **已配置 Docker 镜像加速源或海外用户**：可下载 **`teleagent-2.7.2-online.fpk`**。
+在本项目 [Releases](https://github.com/mwh1987/fnos-teleagent/releases) 页面下载 **`teleagent-2.7.3-online.fpk`**（约 112 KB）。
 
 ### 2. 飞牛应用中心手动安装
 1. 打开飞牛 fnOS 管理界面，进入 **应用中心**；
 2. 点击右上角菜单中的 **手动安装**；
-3. 选择并上传下载好的 `.fpk` 文件；
-4. 确认安装并等待完成（离线版通常只需 20~30 秒导入镜像）。
+3. 选择并上传下载好的 `teleagent-2.7.3-online.fpk` 文件；
+4. 确认端口设置（默认 `5800`，如被占用可按需修改），等待安装完成。
 
 ### 3. 打开使用
 1. 安装完成后，飞牛桌面上将出现 **星辰超级智能体** 图标；
