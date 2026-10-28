@@ -159,6 +159,20 @@ services:
 
 ---
 
+## 🔄 自动化上游版本跟踪与同步发布
+
+本项目已接入全自动上游版本监控流水线（GitHub Actions）：
+- **监控源**：中国电信官方发布中心（[https://www.teleai.com.cn/product/teleagent](https://www.teleai.com.cn/product/teleagent) 及 `agent.teleai.com.cn` 官方直链分发接口）。
+- **巡检机制**：每 4 小时自动巡检一次官方 Linux（x86_64 / arm64 deb）最新发布版本。
+- **全自动发布**：一旦电信官方发布新版：
+  1. 自动同步更新 `manifest`、`docker-compose.yaml` 及 `Dockerfile` 中的版本标识；
+  2. 自动触发多架构（amd64 / arm64）Docker 容器镜像构建；
+  3. 自动打包极速在线 `.fpk`（约 112 KB）；
+  4. 自动创建 GitHub Release 并附加安装包；
+  5. 自动同步飞牛应用市场（`fnos-apps`）推荐源。
+
+---
+
 ## 📄 免责声明与版权
 - TeleAgent 客户端归 **中电信人工智能科技（北京）有限公司** 版权所有。
 - 本项目仅提供在飞牛私有云（fnOS）环境下的 Docker 适配包装与应用集成方案。

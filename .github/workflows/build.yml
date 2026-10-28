@@ -1,22 +1,132 @@
 name: Build & Publish TeleAgent FPK
 
 on:
+  schedule:
+    - cron: '0 */4 * * *'  # Check upstream release every 4 hours
   push:
     branches: [ "main" ]
     tags: [ "v*" ]
   workflow_dispatch:
+    inputs:
+      force_check:
+        description: 'Force trigger a new release even if upstream version has not changed'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
   packages: write
 
 jobs:
+  check-upstream:
+    name: Check Official TeleAgent Upstream Release
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.check.outputs.should_build }}
+      version: ${{ steps.check.outputs.version }}
+      upstream_version: ${{ steps.check.outputs.upstream_version }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check Upstream Status
+        id: check
+        env:
+          FORCE_CHECK: ${{ inputs.force_check || 'false' }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -e
+          APP_VER=$(grep '^version=' fpk/manifest | cut -d= -f2 | tr -d '[:space:]')
+          UPSTREAM_VER=$(jq -r '.upstream_version // ""' .upstream_version 2>/dev/null || echo "2.7.1")
+          if [ -z "$UPSTREAM_VER" ]; then UPSTREAM_VER="2.7.1"; fi
+
+          # Case 1: Triggered by manual tag push (e.g. v2.7.4)
+          if [[ "$EVENT_NAME" == "push" && "$GITHUB_REF" == refs/tags/* ]]; then
+            TAG_VER="${REF_NAME#v}"
+            echo "Triggered by git tag: $TAG_VER"
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            echo "version=$TAG_VER" >> "$GITHUB_OUTPUT"
+            echo "upstream_version=$UPSTREAM_VER" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Case 2: Scheduled check or workflow_dispatch
+          EXTRA_ARGS=""
+          if [ "$FORCE_CHECK" = "true" ]; then
+            EXTRA_ARGS="--force"
+          fi
+
+          python3 scripts/check_upstream.py $EXTRA_ARGS
+
+          NEW_VER=$(grep '^new_version=' "$GITHUB_OUTPUT" | tail -n1 | cut -d= -f2 || echo "false")
+          PKG_VER=$(grep '^pkg_version=' "$GITHUB_OUTPUT" | tail -n1 | cut -d= -f2 || echo "$APP_VER")
+          UPSTREAM_LATEST=$(grep '^upstream_version=' "$GITHUB_OUTPUT" | tail -n1 | cut -d= -f2 || echo "$UPSTREAM_VER")
+
+          if [ "$NEW_VER" = "true" ]; then
+            echo "🚀 New version detected: upstream $UPSTREAM_LATEST -> package $PKG_VER"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add fpk/manifest fpk/app/docker/docker-compose.yaml Dockerfile README.md .upstream_version
+            git commit -m "chore(release): official TeleAgent v${UPSTREAM_LATEST} released - bump FPK to v${PKG_VER}"
+            git push origin main
+            git tag "v${PKG_VER}"
+            git push origin "v${PKG_VER}"
+
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            echo "version=$PKG_VER" >> "$GITHUB_OUTPUT"
+            echo "upstream_version=$UPSTREAM_LATEST" >> "$GITHUB_OUTPUT"
+          else
+            echo "✓ Upstream TeleAgent is up to date ($UPSTREAM_LATEST)."
+            # Push timestamp update if changed
+            if ! git diff --quiet -- .upstream_version 2>/dev/null; then
+              git config user.name "github-actions[bot]"
+              git config user.email "github-actions[bot]@users.noreply.github.com"
+              git add .upstream_version
+              git commit -m "chore: update upstream check timestamp [skip ci]" || true
+              git push origin main || true
+            fi
+
+            # If manual push to main, build latest container only if desired, otherwise skip
+            if [ "$EVENT_NAME" = "push" ]; then
+              echo "Push to main detected - building latest images"
+              echo "should_build=true" >> "$GITHUB_OUTPUT"
+              echo "version=$APP_VER" >> "$GITHUB_OUTPUT"
+              echo "upstream_version=$UPSTREAM_VER" >> "$GITHUB_OUTPUT"
+            else
+              echo "should_build=false" >> "$GITHUB_OUTPUT"
+              echo "version=$APP_VER" >> "$GITHUB_OUTPUT"
+              echo "upstream_version=$UPSTREAM_VER" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
   docker:
     name: Build & Push Multi-Arch Docker Image
+    needs: check-upstream
+    if: needs.check-upstream.outputs.should_build == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout Target Tag
+        run: |
+          TARGET_TAG="v${{ needs.check-upstream.outputs.version }}"
+          if git rev-parse "$TARGET_TAG" >/dev/null 2>&1; then
+            echo "Checking out $TARGET_TAG"
+            git checkout "$TARGET_TAG"
+          fi
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -32,6 +142,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
+        continue-on-error: true
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -46,7 +157,7 @@ jobs:
             docker.io/${{ github.repository_owner }}/teleagent-web
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=2.7.3,enable={{is_default_branch}}
+            type=raw,value=${{ needs.check-upstream.outputs.version }}
             type=ref,event=branch
             type=ref,event=tag
             type=sha
@@ -58,6 +169,8 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
+          build-args: |
+            TELEAGENT_VERSION=${{ needs.check-upstream.outputs.upstream_version }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
@@ -65,11 +178,22 @@ jobs:
 
   fpk:
     name: Build fnOS FPK Package
-    needs: docker
+    needs: [check-upstream, docker]
+    if: needs.check-upstream.outputs.should_build == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout Target Tag
+        run: |
+          TARGET_TAG="v${{ needs.check-upstream.outputs.version }}"
+          if git rev-parse "$TARGET_TAG" >/dev/null 2>&1; then
+            echo "Checking out $TARGET_TAG"
+            git checkout "$TARGET_TAG"
+          fi
 
       - name: Install fnpack
         run: |
@@ -80,28 +204,32 @@ jobs:
       - name: Build FPK Package
         run: |
           fnpack build --directory fpk
+          PKG_VER="${{ needs.check-upstream.outputs.version }}"
+          cp teleagent.fpk "teleagent-${PKG_VER}-online.fpk"
           ls -lh *.fpk
 
       - name: Upload FPK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: teleagent.fpk
+          name: teleagent-${{ needs.check-upstream.outputs.version }}-online.fpk
           path: "*.fpk"
           if-no-files-found: error
 
       - name: Create Release and Upload Asset
-        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v2
         with:
           files: "*.fpk"
-          tag_name: ${{ github.ref_name || 'latest' }}
-          name: "TeleAgent fnOS FPK - ${{ github.ref_name || 'latest' }}"
+          tag_name: v${{ needs.check-upstream.outputs.version }}
+          name: "星辰超级智能体 TeleAgent v${{ needs.check-upstream.outputs.version }} (轻量在线安装包)"
           body: |
             ## 星辰超级智能体（TeleAgent）飞牛私有云 fnOS 安装包
 
-            - **版本**：2.7.3
-            - **架构**：全平台通用（x86_64 / arm64）
+            - **版本**：v${{ needs.check-upstream.outputs.version }} (底层智能体版本: v${{ needs.check-upstream.outputs.upstream_version }})
+            - **架构**：全平台通用（x86_64 / arm64 多架构）
             - **网络模式**：Bridge 桥接端口映射（默认 Web 端口 5800，支持冲突自动拦截与自定义端口）
-            - **镜像仓库**：`mwh1987/teleagent-web:2.7.3` 与 `ghcr.io/${{ github.repository_owner }}/teleagent-web:latest`
+            - **镜像仓库**：`mwh1987/teleagent-web:${{ needs.check-upstream.outputs.version }}` 与 `ghcr.io/${{ github.repository_owner }}/teleagent-web:latest`
+            - **包类型**：轻量在线安装包（~114 KB，首次安装自动拉取多架构容器镜像）
+            - **官方发布源**：https://www.teleai.com.cn/product/teleagent
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

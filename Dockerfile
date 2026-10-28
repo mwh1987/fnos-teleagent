@@ -137,6 +137,7 @@ RUN mkdir -p /etc/gtk-3.0 && printf "[Settings]\ngtk-im-module=fcitx\n" > /etc/g
 
 # 2. 根据目标架构下载并安装 TeleAgent deb 包，内置 Google Chrome 官方正式版浏览器，并预装 Python 核心文档库
 ARG TARGETARCH
+ARG TELEAGENT_VERSION=2.7.1
 RUN set -ex; \
     ARCH="$(dpkg --print-architecture)"; \
     echo "Detected container architecture: ${ARCH} (BuildKit TARGETARCH: ${TARGETARCH})"; \
@@ -171,7 +172,7 @@ RUN set -ex; \
     else \
         echo "Unsupported architecture: ${ARCH}" && exit 1; \
     fi; \
-    DEB_URL="https://cdn01.teleai.com.cn/packages/2.7.1/TeleAgent-2.7.1-${PKG_ARCH}.deb"; \
+    DEB_URL="https://cdn01.teleai.com.cn/packages/${TELEAGENT_VERSION}/TeleAgent-${TELEAGENT_VERSION}-${PKG_ARCH}.deb"; \
     echo "Downloading ${DEB_URL}..."; \
     wget -q "${DEB_URL}" -O /tmp/teleagent.deb; \
     dpkg -i /tmp/teleagent.deb || apt-get install -fy; \
