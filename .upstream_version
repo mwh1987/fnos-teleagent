@@ -2,5 +2,5 @@
   "upstream_version": "2.7.1",
   "deb_url_x64": "https://cdn01.teleai.com.cn/packages/2.7.1/TeleAgent-2.7.1-amd64.deb",
   "deb_url_arm64": "https://cdn01.teleai.com.cn/packages/2.7.1/TeleAgent-2.7.1-arm64.deb",
-  "last_checked": "2026-10-29T14:58:01.396308+00:00"
+  "last_checked": "2026-10-29T20:52:53.842970+00:00"
 }
