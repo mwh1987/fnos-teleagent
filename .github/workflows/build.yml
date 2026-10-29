@@ -96,17 +96,10 @@ jobs:
               git push origin main || true
             fi
 
-            # If manual push to main, build latest container only if desired, otherwise skip
-            if [ "$EVENT_NAME" = "push" ]; then
-              echo "Push to main detected - building latest images"
-              echo "should_build=true" >> "$GITHUB_OUTPUT"
-              echo "version=$APP_VER" >> "$GITHUB_OUTPUT"
-              echo "upstream_version=$UPSTREAM_VER" >> "$GITHUB_OUTPUT"
-            else
-              echo "should_build=false" >> "$GITHUB_OUTPUT"
-              echo "version=$APP_VER" >> "$GITHUB_OUTPUT"
-              echo "upstream_version=$UPSTREAM_VER" >> "$GITHUB_OUTPUT"
-            fi
+            echo "No new release to build. Skipping Docker & FPK jobs."
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+            echo "version=$APP_VER" >> "$GITHUB_OUTPUT"
+            echo "upstream_version=$UPSTREAM_VER" >> "$GITHUB_OUTPUT"
           fi
 
   docker:
@@ -117,16 +110,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Checkout Target Tag
-        run: |
-          TARGET_TAG="v${{ needs.check-upstream.outputs.version }}"
-          if git rev-parse "$TARGET_TAG" >/dev/null 2>&1; then
-            echo "Checking out $TARGET_TAG"
-            git checkout "$TARGET_TAG"
-          fi
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -184,16 +167,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Checkout Target Tag
-        run: |
-          TARGET_TAG="v${{ needs.check-upstream.outputs.version }}"
-          if git rev-parse "$TARGET_TAG" >/dev/null 2>&1; then
-            echo "Checking out $TARGET_TAG"
-            git checkout "$TARGET_TAG"
-          fi
 
       - name: Install fnpack
         run: |
