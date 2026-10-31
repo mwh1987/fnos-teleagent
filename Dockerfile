@@ -137,7 +137,7 @@ RUN mkdir -p /etc/gtk-3.0 && printf "[Settings]\ngtk-im-module=fcitx\n" > /etc/g
 
 # 2. 根据目标架构下载并安装 TeleAgent deb 包，内置 Google Chrome 官方正式版浏览器，并预装 Python 核心文档库
 ARG TARGETARCH
-ARG TELEAGENT_VERSION=2.7.1
+ARG TELEAGENT_VERSION=3.0.0-rc.1
 RUN set -ex; \
     ARCH="$(dpkg --print-architecture)"; \
     echo "Detected container architecture: ${ARCH} (BuildKit TARGETARCH: ${TARGETARCH})"; \

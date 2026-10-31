@@ -8,7 +8,7 @@
 
 ## ✨ 特性亮点
 
-- 📦 **轻量极速在线安装包（`teleagent-2.7.3-online.fpk`，仅 ~112KB）**：
+- 📦 **轻量极速在线安装包（`teleagent-3.0.0-rc.1-online.fpk`，仅 ~112KB）**：
   - 体积轻巧秒级下载，安装时自动拉取多架构（amd64 / arm64）Docker 镜像，开箱即用。
   - 镜像同时托管于 Docker Hub（`mwh1987/teleagent-web`）与 GitHub Packages（`ghcr.io`），支持国内加速镜像源。
 - 🔌 **极简 Bridge 端口映射与智能冲突拦截**：
@@ -44,12 +44,12 @@
 ## 📥 安装使用步骤
 
 ### 1. 下载安装包
-在本项目 [Releases](https://github.com/mwh1987/fnos-teleagent/releases) 页面下载 **`teleagent-2.7.3-online.fpk`**（约 112 KB）。
+在本项目 [Releases](https://github.com/mwh1987/fnos-teleagent/releases) 页面下载 **`teleagent-3.0.0-rc.1-online.fpk`**（约 112 KB）。
 
 ### 2. 飞牛应用中心手动安装
 1. 打开飞牛 fnOS 管理界面，进入 **应用中心**；
 2. 点击右上角菜单中的 **手动安装**；
-3. 选择并上传下载好的 `teleagent-2.7.3-online.fpk` 文件；
+3. 选择并上传下载好的 `teleagent-3.0.0-rc.1-online.fpk` 文件；
 4. 确认端口设置（默认 `5800`，如被占用可按需修改），等待安装完成。
 
 ### 3. 打开使用
