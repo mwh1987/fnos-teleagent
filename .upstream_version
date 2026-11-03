@@ -2,5 +2,5 @@
   "upstream_version": "3.0.0-rc.2",
   "deb_url_x64": "https://cdn01.teleai.com.cn/packages/3.0.0-rc.2/TeleAgent-3.0.0-rc.2-amd64.deb",
   "deb_url_arm64": "https://cdn01.teleai.com.cn/packages/3.0.0-rc.2/TeleAgent-3.0.0-rc.2-arm64.deb",
-  "last_checked": "2026-11-03T02:00:34.206653+00:00"
+  "last_checked": "2026-11-03T11:38:42.071956+00:00"
 }
