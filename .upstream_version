@@ -1,6 +1,6 @@
 {
-  "upstream_version": "3.0.0-rc.3",
-  "deb_url_x64": "https://cdn01.teleai.com.cn/packages/3.0.0-rc.3/TeleAgent-3.0.0-rc.3-amd64.deb",
-  "deb_url_arm64": "https://cdn01.teleai.com.cn/packages/3.0.0-rc.3/TeleAgent-3.0.0-rc.3-arm64.deb",
-  "last_checked": "2026-11-04T11:47:03.468470+00:00"
+  "upstream_version": "3.0.0-rc.4",
+  "deb_url_x64": "https://cdn01.teleai.com.cn/packages/3.0.0-rc.4/TeleAgent-3.0.0-rc.4-amd64.deb",
+  "deb_url_arm64": "https://cdn01.teleai.com.cn/packages/3.0.0-rc.4/TeleAgent-3.0.0-rc.4-arm64.deb",
+  "last_checked": "2026-11-04T19:12:48.840614+00:00"
 }
