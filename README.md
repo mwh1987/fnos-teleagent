@@ -1,8 +1,11 @@
 # 星辰超级智能体（TeleAgent）飞牛私有云（fnOS）应用安装包
 
 [![Build & Publish TeleAgent FPK](https://github.com/mwh1987/fnos-teleagent/actions/workflows/build.yml/badge.svg)](https://github.com/mwh1987/fnos-teleagent/actions/workflows/build.yml)
+[![Changelog](https://img.shields.io/badge/Changelog-%E5%AE%98%E6%96%B9%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97-blue.svg)](CHANGELOG.md)
 
 本项目为中国电信自研 **星辰超级智能体（TeleAgent）** 在飞牛私有云（fnOS）上的官方规范打包工程。通过 Docker Web GUI 容器化技术，让用户可以在飞牛管理桌面中无缝体验 TeleAgent 的完整 AI 办公能力。
+
+> 📋 **官方更新日志**：已接入中国电信官方文档中心自动同步，详细版本演进及功能变动请参阅 [CHANGELOG.md](CHANGELOG.md)。
 
 ---
 
@@ -162,14 +165,16 @@ services:
 ## 🔄 自动化上游版本跟踪与同步发布
 
 本项目已接入全自动上游版本监控流水线（GitHub Actions）：
-- **监控源**：中国电信官方发布中心（[https://www.teleai.com.cn/product/teleagent](https://www.teleai.com.cn/product/teleagent) 及 `agent.teleai.com.cn` 官方直链分发接口）。
-- **巡检机制**：每 4 小时自动巡检一次官方 Linux（x86_64 / arm64 deb）最新发布版本。
-- **全自动发布**：一旦电信官方发布新版：
-  1. 自动同步更新 `manifest`、`docker-compose.yaml` 及 `Dockerfile` 中的版本标识；
-  2. 自动触发多架构（amd64 / arm64）Docker 容器镜像构建；
-  3. 自动打包极速在线 `.fpk`（约 112 KB）；
-  4. 自动创建 GitHub Release 并附加安装包；
-  5. 自动同步飞牛应用市场（`fnos-apps`）推荐源。
+- **版本监控源**：中国电信官方发布中心（[https://www.teleai.com.cn/product/teleagent](https://www.teleai.com.cn/product/teleagent) 及 `agent.teleai.com.cn` 官方直链分发接口）。
+- **文档监控源**：中国电信 TeleAgent [官方更新日志文档中心](https://www.teleai.com.cn/doc/YMP2z8La01W7T5qIHEww/vl1kQ5tUwikhl5urqiuD)。
+- **巡检机制**：每 4 小时自动巡检一次官方 Linux（x86_64 / arm64 deb）最新发布版本与官方更新日志。
+- **全自动发布**：
+  1. 实时抓取并解析官方更新日志，同步至 [CHANGELOG.md](CHANGELOG.md)；
+  2. 一旦电信官方发布新版，自动同步更新 `manifest`、`docker-compose.yaml` 及 `Dockerfile` 中的版本标识；
+  3. 自动触发多架构（amd64 / arm64）Docker 容器镜像构建；
+  4. 自动打包极速在线 `.fpk`（约 112 KB）；
+  5. 自动创建 GitHub Release 并附加安装包；
+  6. 自动同步飞牛应用市场（`fnos-apps`）推荐源。
 
 ---
 

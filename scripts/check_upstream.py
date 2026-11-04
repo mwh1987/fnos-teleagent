@@ -21,6 +21,102 @@ import datetime
 import urllib.request
 from typing import Dict, Any, Tuple, Optional
 
+OFFICIAL_DOC_URL = "https://www.teleai.com.cn/doc/YMP2z8La01W7T5qIHEww/vl1kQ5tUwikhl5urqiuD"
+
+
+def parse_changelog_html(html_str: str) -> Optional[str]:
+    """Parse official vditor changelog HTML into clean GitHub-flavored Markdown."""
+    try:
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(html_str, "html.parser")
+        vditor = soup.find(id="vditor")
+        if not vditor:
+            return None
+
+        lines = [
+            "# 星辰超级智能体（TeleAgent）官方更新日志\n\n",
+            f"> 数据源：[中国电信 TeleAgent 官方更新日志]({OFFICIAL_DOC_URL})，由项目自动化巡检流水线同步更新。\n\n---\n"
+        ]
+
+        for child in vditor.children:
+            if not child.name:
+                continue
+            if child.name == "h1":
+                v_text = child.get_text().strip()
+                lines.append(f"\n## {v_text}\n")
+            elif child.name == "blockquote":
+                bq_text = child.get_text().strip()
+                for l in bq_text.splitlines():
+                    if l.strip():
+                        lines.append(f"> {l.strip()}\n")
+                lines.append("\n")
+            elif child.name == "ul":
+                for li in child.find_all("li", recursive=False):
+                    lines.append(f"- {li.get_text().strip()}\n")
+                lines.append("\n")
+            elif child.name == "ol":
+                for i, li in enumerate(child.find_all("li", recursive=False), 1):
+                    lines.append(f"{i}. {li.get_text().strip()}\n")
+                lines.append("\n")
+            elif child.name == "p":
+                text = child.get_text().strip()
+                if not text:
+                    continue
+
+                if re.match(r"^202\d年\d+月\d+日", text):
+                    lines.append(f"**发布日期**：{text}\n\n")
+                    continue
+
+                if (re.match(r"^[一二三四五六七八九十]+、", text) or
+                    text.startswith("功能优化") or
+                    text.startswith("体验修复") or
+                    text.startswith("bug修复") or
+                    text.startswith("问题修复")):
+                    clean_t = text.rstrip("：: ").strip()
+                    lines.append(f"\n### {clean_t}\n\n")
+                    continue
+
+                m = re.match(r"^(\d+)[\.、]\s*(.*)$", text)
+                if m:
+                    lines.append(f"{m.group(1)}. {m.group(2).strip()}\n")
+                    continue
+
+                lines.append(f"{text}\n\n")
+
+        result = "".join(lines)
+        result = re.sub(r"\n{3,}", "\n\n", result)
+        return result
+    except Exception as e:
+        print(f"[-] Warning: Failed to parse changelog HTML: {e}", file=sys.stderr)
+        return None
+
+
+def sync_changelog(repo_root: str, dry_run: bool = False) -> bool:
+    """Fetch official changelog from official doc URL and update CHANGELOG.md."""
+    changelog_path = os.path.join(repo_root, "CHANGELOG.md")
+    print(f"[*] Fetching official changelog from {OFFICIAL_DOC_URL}...")
+    try:
+        req = urllib.request.Request(
+            OFFICIAL_DOC_URL,
+            headers={
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+            }
+        )
+        html = urllib.request.urlopen(req, timeout=15).read().decode("utf-8", errors="ignore")
+        md_content = parse_changelog_html(html)
+        if not md_content:
+            print("[-] Warning: Failed to extract changelog content.", file=sys.stderr)
+            return False
+
+        if not dry_run:
+            with open(changelog_path, "w", encoding="utf-8") as f:
+                f.write(md_content)
+        print(f"[+] {'[DRY-RUN] ' if dry_run else ''}Updated {changelog_path} ({len(md_content)} chars)")
+        return True
+    except Exception as e:
+        print(f"[-] Warning: Failed to sync changelog: {e}", file=sys.stderr)
+        return False
+
 
 class NoRedirectHandler(urllib.request.HTTPRedirectHandler):
     """Custom handler to capture 302 headers without following the redirect body."""
@@ -173,7 +269,10 @@ def update_repo_files(repo_root: str, upstream_ver: str, pkg_ver: str, x64_url: 
                 f.write(new_content)
         print(f"[+] {'[DRY-RUN] ' if dry_run else ''}Updated {readme_path} references -> teleagent-{pkg_ver}-online.fpk")
 
-    # 5. Update .upstream_version state
+    # 5. Update CHANGELOG.md
+    sync_changelog(repo_root, dry_run=dry_run)
+
+    # 6. Update .upstream_version state
     now_iso = datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat()
     state_data = {
         "upstream_version": upstream_ver,
@@ -261,6 +360,9 @@ def main():
         emit_github_output("deb_url_x64", x64_url or "")
         emit_github_output("deb_url_arm64", arm64_url or "")
     else:
+        # Also sync CHANGELOG.md to capture any document updates
+        sync_changelog(repo_root, dry_run=args.dry_run)
+
         # Update timestamp only
         if not args.dry_run and os.path.exists(state_file):
             try:

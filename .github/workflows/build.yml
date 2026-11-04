@@ -38,6 +38,10 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install dependencies
+        run: |
+          pip install beautifulsoup4
+
       - name: Check Upstream Status
         id: check
         env:
@@ -76,7 +80,7 @@ jobs:
             echo "🚀 New version detected: upstream $UPSTREAM_LATEST -> package $PKG_VER"
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add fpk/manifest fpk/app/docker/docker-compose.yaml Dockerfile README.md .upstream_version
+            git add fpk/manifest fpk/app/docker/docker-compose.yaml Dockerfile README.md .upstream_version CHANGELOG.md
             git commit -m "chore(release): official TeleAgent v${UPSTREAM_LATEST} released - bump FPK to v${PKG_VER}"
             git push origin main
             git tag "v${PKG_VER}"
@@ -87,12 +91,12 @@ jobs:
             echo "upstream_version=$UPSTREAM_LATEST" >> "$GITHUB_OUTPUT"
           else
             echo "✓ Upstream TeleAgent is up to date ($UPSTREAM_LATEST)."
-            # Push timestamp update if changed
-            if ! git diff --quiet -- .upstream_version 2>/dev/null; then
+            # Push timestamp and changelog update if changed
+            if ! git diff --quiet -- .upstream_version CHANGELOG.md 2>/dev/null; then
               git config user.name "github-actions[bot]"
               git config user.email "github-actions[bot]@users.noreply.github.com"
-              git add .upstream_version
-              git commit -m "chore: update upstream check timestamp [skip ci]" || true
+              git add .upstream_version CHANGELOG.md
+              git commit -m "docs: sync upstream official changelog [skip ci]" || true
               git push origin main || true
             fi
 
@@ -203,6 +207,8 @@ jobs:
             - **网络模式**：Bridge 桥接端口映射（默认 Web 端口 5800，支持冲突自动拦截与自定义端口）
             - **镜像仓库**：`mwh1987/teleagent-web:${{ needs.check-upstream.outputs.version }}` 与 `ghcr.io/${{ github.repository_owner }}/teleagent-web:latest`
             - **包类型**：轻量在线安装包（~114 KB，首次安装自动拉取多架构容器镜像）
+            - **官方更新日志**：[CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+            - **官方文档中心**：https://www.teleai.com.cn/doc/YMP2z8La01W7T5qIHEww/vl1kQ5tUwikhl5urqiuD
             - **官方发布源**：https://www.teleai.com.cn/product/teleagent
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
