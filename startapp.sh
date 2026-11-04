@@ -129,5 +129,14 @@ if [ -e /dev/dri/renderD128 ] && [ -r /dev/dri/renderD128 ]; then
     GPU_FLAGS="--enable-features=VaapiVideoDecoder --use-gl=desktop"
 fi
 
+# 清理可能残留的 Electron 单例锁，防止异常退出或升级后陷入启动死循环
+rm -f /config/.local/share/TeleAgent/Singleton* 2>/dev/null || true
+
+# 双重兜底保障：确保 uiohook-napi 不会在无头 TigerVNC 环境下调用 XRecord 导致 SIGABRT 崩溃
+UIOHOOK_DIST="/opt/TeleAgent/resources/app.asar.unpacked/node_modules/uiohook-napi/dist/index.js"
+if [ -f "$UIOHOOK_DIST" ] && grep -q "lib\.start" "$UIOHOOK_DIST" 2>/dev/null; then
+    sed -i 's/lib\.start(this\.handler\.bind(this));/\/* bypassed on headless X11 *\//g; s/lib\.stop();/\/* bypassed *\//g' "$UIOHOOK_DIST" 2>/dev/null || true
+fi
+
 # 启动 TeleAgent（禁用 sandbox，禁用 dev-shm-usage，自适应 GPU 硬件加速，强制 GTK3 输入法管线）
 exec /opt/TeleAgent/teleagent --no-sandbox --disable-dev-shm-usage $GPU_FLAGS --gtk-version=3 --ozone-platform=x11 "$@"

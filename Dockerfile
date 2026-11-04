@@ -192,13 +192,22 @@ RUN set -ex; \
         fi; \
     done; \
     \
-    # 2.2 配置 tint2 任务栏默认参数（底部常驻 30px，提供 Chrome 启动图标、窗口列表按钮、系统托盘及时间显示）
+    # 2.2 规避 uiohook-napi 在无头 TigerVNC 环境下因缺失 X11 RECORD 扩展导致的崩溃与黑屏 (SIGABRT 134)
+    # TeleAgent v3 引入了 uiohook-napi 监听全局热键/桌宠，在未提供 RECORD 扩展的虚拟 X11 中调用 XRecord 会 abort()。
+    # 优雅短路 native 钩子启动，消除崩溃风险并让主渲染窗口正常秒级展示。
+    UIOHOOK_DIST="/opt/TeleAgent/resources/app.asar.unpacked/node_modules/uiohook-napi/dist/index.js"; \
+    if [ -f "$UIOHOOK_DIST" ]; then \
+        echo "Patching uiohook-napi in $UIOHOOK_DIST..."; \
+        sed -i 's/lib\.start(this\.handler\.bind(this));/\/* bypassed on headless X11 *\//g; s/lib\.stop();/\/* bypassed *\//g' "$UIOHOOK_DIST"; \
+    fi; \
+    \
+    # 2.3 配置 tint2 任务栏默认参数（底部常驻 30px，提供 Chrome 启动图标、窗口列表按钮、系统托盘及时间显示）
     if [ -f /etc/xdg/tint2/tint2rc ]; then \
         sed -i '/launcher_item_app/d' /etc/xdg/tint2/tint2rc && \
         echo "launcher_item_app = /usr/share/applications/google-chrome.desktop" >> /etc/xdg/tint2/tint2rc; \
     fi; \
     \
-    # 2.3 瘦身优化：删除无用文档、大体积许可证页面及 Windows/Mac 图标残留
+    # 2.4 瘦身优化：删除无用文档、大体积许可证页面及 Windows/Mac 图标残留
     rm -f /opt/TeleAgent/LICENSES.chromium.html \
           /opt/TeleAgent/resources/icon.ico \
           /opt/TeleAgent/resources/icon.icns; \
