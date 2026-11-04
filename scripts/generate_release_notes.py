@@ -37,7 +37,14 @@ def main():
 
 ---
 
-### 📋 本次版本更新日志
+### 🛠️ fnOS 封装层重要更新 (v{pkg_ver})
+
+- **修复无头 TigerVNC 黑屏闪退 (SIGABRT 134)**：针对 TeleAgent v3 引入的 `uiohook-napi` 全局热键模块，在缺少 X11 RECORD 扩展的虚拟显示环境下调用导致主进程崩溃的问题，新增 native 钩子优雅短路 patch 与启动双重兜底保障，确保 Web 桌面窗口秒级渲染显示。
+- **清理 Electron 单例锁**：启动脚本自动清理残留的 `Singleton*` 锁，避免因非正常关机导致的启动卡死问题。
+
+---
+
+### 📋 官方更新日志
 
 {latest_notes}
 """
